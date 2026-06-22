@@ -61,3 +61,75 @@ The VM's public IP was upgraded to **Static** to ensure it never changes. A frie
 ## 4. Remote Desktop Connection (RDP) Success
 
 A remote desktop connection was initiated from the local Windows machine using the assigned DNS name. The connection was successful, and full administrative access to the VM desktop GUI was verified via the Windows Remote Desktop Client.
+
+---
+
+## 5. Linux Virtual Machine Setup & SSH Connection
+
+This section outlines the deployment of an Ubuntu Linux VM, the resolution of SSH key authentication, and the successful hosting of a custom web page using Nginx.
+
+###### VM Deployment via Azure CLI
+The Linux VM was provisioned using the following Azure CLI command:
+
+**BASH**
+
+```
+
+az vm create \
+  --resource-group rg-linux-ssh \
+  --name linux-vm-olof \
+  --image Ubuntu2204 \
+  --admin-username azureuser \
+  --generate-ssh-keys \
+  --size Standard_B1s \
+  --public-ip-sku Standard
+
+  ```
+
+  ###### Network Security Group (NSG) Configuration
+To secure the SSH port (22) and the HTTP port (80), specific inbound rules were configured:
+
+| Rule Name | Port | Source | Priority |
+| :--- | :--- | :--- | :--- |
+| default-allow-ssh | 22 | My IP Address | 1000 |
+| AllowHTTP | 80 | Any (*) | 1010 |
+
+###### SSH Key Authentication & Troubleshooting
+During initial connection attempts, a `Permission denied (publickey)` error was encountered. This was resolved by generating a dedicated SSH key pair and manually injecting the public key into the VM using Azure's `RunShellScript` command.
+
+
+###### SSH Key Authentication & Troubleshooting
+During initial connection attempts, a `Permission denied (publickey)` error was encountered. This was resolved by generating a dedicated SSH key pair and manually injecting the public key into the VM using Azure's RunShellScript command.
+
+```
+
+# Generate a dedicated key pair
+ssh-keygen -t rsa -b 4096 -f ~/.ssh/azure_vm_key -N ""
+
+# Inject the key into the VM
+az vm run-command invoke \
+  --resource-group rg-linux-ssh \
+  --name linux-vm-olof \
+  --command-id RunShellScript \
+  --scripts "mkdir -p /home/azureuser/.ssh && echo '$(cat ~/.ssh/azure_vm_key.pub)' >> /home/azureuser/.ssh/authorized_keys && chown -R azureuser:azureuser /home/azureuser/.ssh && chmod 700 /home/azureuser/.ssh && chmod 600 /home/azureuser/.ssh/authorized_keys"
+
+# Successful connection command
+ssh -i ~/.ssh/azure_vm_key azureuser@20.109.165.190
+
+```
+
+###### Application Deployment & Access
+Once connected, the Nginx web server was installed to demonstrate administrative control over the VM:
+
+**BASH**
+
+```
+
+sudo apt update
+sudo apt install nginx -y
+
+```
+
+The default Nginx welcome page was customized directly in the VM's file system (/var/www/html) to display a personal message, proving full root access and web server configuration capabilities.
+
+> Public IP Access: http://20.109.165.190
