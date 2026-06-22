@@ -1,7 +1,7 @@
 ##### Virtual Machine Setup and Remote Connection Learning Project
 
 ###### Project Overview
-This project demonstrates the creation of a secure Azure Virtual Machine (VM), the configuration of network security groups, and the establishment of a remote desktop connection (RDP) to access a Windows-based VM.
+This project demonstrates the creation of 2 secure Azure Virtual Machines (VMs), a Windows VM and Linux VM, the configuration of network security groups, and the establishment of a remote desktop connection (RDP) and an SSH connection to access the Windows-based VM and Linux VM respectively.
 
 The goal is to simulate real-world cloud administration tasks, focusing on connectivity, security rule enforcement, and secure access management using Azure Portal and CLI.
 
